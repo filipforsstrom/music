@@ -6,7 +6,7 @@ const MonoVoiceManager = @import("MonoVoiceManager.zig");
 const FMBass = @This();
 const Smoother = @import("Smoother.zig");
 const Pd = @import("PdVoice.zig").Pd;
-const DrumEnv = @import("DrumEnv.zig");
+const ADEnv = @import("ADEnv.zig");
 
 const Accessor = @import("Accessor.zig").Accessor;
 
@@ -34,7 +34,7 @@ params: Params = .{},
 amp_env: ADREnv = .{},
 prev: f32 = 0,
 prev_res: f32 = 0,
-mod_env: DrumEnv = .{},
+mod_env: ADEnv = .{},
 prev_gate: bool = false,
 
 accentness_smooth: Smoother = .{},
@@ -59,10 +59,20 @@ pub inline fn next(self: *FMBass, srate: f32) f32 {
     self.prev_gate = self.man.state.gate;
 
     const accentness = if (state.velocity >= 96) accentness_raw else 0;
-    const mp: DrumEnv.Params = if (accentness > 0)
-        .{ .time = 0.2, .shape = 0.5 }
+    const mp: ADEnv.Params = if (accentness > 0)
+        .{
+            .attack = 0.05,
+            .decay = 0.2,
+            .attack_shape = 1,
+            .decay_shape = 0.5,
+        }
     else
-        .{ .time = self.params.get(.decay), .shape = 0.5 };
+        .{
+            .attack = 0,
+            .decay = self.params.get(.decay),
+            .attack_shape = 0.5,
+            .decay_shape = 0.5,
+        };
     const mod_env = self.mod_env.next(&mp, srate);
 
     const fb = self.prev * feedback;
@@ -112,7 +122,7 @@ pub fn handleMidiEvent(self: *FMBass, event: midi.Event) void {
     }
 }
 
-pub fn mod_env_params(accentness: f32, user_params: DrumEnv.Params) DrumEnv.Params {
+pub fn mod_env_params(accentness: f32, user_params: ADEnv.Params) ADEnv.Params {
     return .{ .time = lerp(user_params.time, 0.2, accentness), .shape = user_params.shape };
 }
 
