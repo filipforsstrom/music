@@ -3,7 +3,7 @@ const gui = @import("gui.zig");
 const midi = @import("midi.zig");
 
 const JackState = @import("JackState.zig");
-const FMBass = @import("FMBass.zig");
+const PDBass = @import("PDBass.zig");
 
 const RGB = gui.RGB;
 const Slot = gui.Slot;
@@ -14,12 +14,12 @@ var midiport: *JackState.Port = undefined;
 var audioport: *JackState.Port = undefined;
 var in = midi.In{};
 
-var params = FMBass.Params{};
+var params = PDBass.Params{};
 
-var synth: FMBass = .{};
+var synth: PDBass = .{};
 
 pub fn main() !void {
-    const name = "fmbass";
+    const name = "pdbass";
     var redraw = false;
 
     const bg = RGB.init(30, 30, 30);

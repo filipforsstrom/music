@@ -3,7 +3,7 @@ const midi = @import("midi.zig");
 const std = @import("std");
 const MonoLegato = @import("MonoLegato.zig");
 const MonoVoiceManager = @import("MonoVoiceManager.zig");
-const FMBass = @This();
+const PDBass = @This();
 const Smoother = @import("Smoother.zig");
 const Pd = @import("PdVoice.zig").Pd;
 const ADEnv = @import("ADEnv.zig");
@@ -44,7 +44,7 @@ timbre_smooth: Smoother = .{},
 feedback_smooth: Smoother = .{},
 mod_smooth: Smoother = .{},
 
-pub inline fn next(self: *FMBass, srate: f32) f32 {
+pub inline fn next(self: *PDBass, srate: f32) f32 {
     const accentness_raw = self.accentness_smooth.next(self.params.get(.accentness), param_smooth_time, srate);
     const bend = self.bend_smooth.next(self.bend, bend_smooth_time, srate);
     const timbre = self.timbre_smooth.next(self.params.get(.timbre), param_smooth_time, srate);
@@ -112,7 +112,7 @@ pub inline fn next(self: *FMBass, srate: f32) f32 {
     return self.prev;
 }
 
-pub fn handleMidiEvent(self: *FMBass, event: midi.Event) void {
+pub fn handleMidiEvent(self: *PDBass, event: midi.Event) void {
     if ((event.channel() orelse return) != self.params.get(.channel)) return;
     switch (event) {
         .note_on => |e| self.man.noteOn(e.pitch, e.velocity),
